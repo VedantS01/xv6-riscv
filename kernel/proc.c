@@ -119,7 +119,8 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
-
+  p->traced = 0;
+  p->mask = 0;
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
     freeproc(p);
@@ -294,6 +295,13 @@ fork(void)
 
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;
+
+  //EDIT by Vedant Saboo
+  //Cause fork to check parent trace, if yes then set up trace for child
+  if(p->traced) {
+    np->traced = p->traced;
+    np->mask = p->mask;
+  }
 
   // increment reference counts on open file descriptors.
   for(i = 0; i < NOFILE; i++)
